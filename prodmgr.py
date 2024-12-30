@@ -49,14 +49,10 @@ class ProductionManager:
 
     def handle_ai(self):
         # Handle AI for machines breaking down, workers' productivity, and external factors
-        self.output += f"\nHandling AI... (e.g., machine breakdowns or supply chain issues)"
-        
-        # Random example of a machine breakdown or worker productivity drop
+        # No output needed for AI handling
         if len(self.machines) > 0 and random.random() < 0.1:  # 10% chance for breakdown
-            self.output += "\nWarning: A machine broke down!"
             self.machines = self.machines[:-1]  # Simulate a machine breakdown
         if len(self.workers) > 0 and random.random() < 0.05:  # 5% chance for worker fatigue
-            self.output += "\nWarning: A worker is fatigued and needs rest!"
             self.workers = self.workers[:-1]  # Simulate a worker leaving temporarily
 
     def update_world(self):
@@ -89,7 +85,7 @@ class ProductionManager:
         Workers: {len(self.workers)}
         """
 
-        # Append additional outputs such as events, warnings, or AI handling
+        # Append additional outputs such as events, warnings
         self.output = status_output + self.output
         
         # Print the output once all events are processed
@@ -106,6 +102,11 @@ class ProductionManager:
         while True:
             current_time = time.time()
             delta_time = current_time - last_time
+
+            # Occasionally skip an action for randomness
+            if random.random() < 0.2:  # 20% chance to skip an action
+                time.sleep(frame_duration - delta_time)
+                continue  # Skip the rest of the loop and wait for the next frame
 
             if delta_time >= frame_duration:
                 self.process_input()  # Simulate random user input
