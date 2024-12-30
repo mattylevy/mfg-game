@@ -20,6 +20,9 @@ class ProductionManager:
 
     def process_input(self):
         # Simulate random user decisions like adding machines, changing goals, or assigning workers
+        if random.random() < 0.2:  # 20% chance to skip processing
+            return  # Skip the rest of the function if no action is taken
+
         events = ["Add machine", "Hire worker", "Increase production goal", "Purchase raw materials"]
         event = random.choice(events)
         
@@ -110,10 +113,6 @@ class ProductionManager:
             sleep_duration = frame_duration - delta_time
             if sleep_duration > 0:
                 time.sleep(sleep_duration)
-
-            # Occasionally skip an action for randomness
-            if random.random() < 0.2:  # 20% chance to skip an action
-                continue  # Skip the rest of the loop and wait for the next frame
 
             if delta_time >= frame_duration:
                 self.process_input()  # Simulate random user input
