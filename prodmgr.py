@@ -69,18 +69,17 @@ class ProductionManager:
             self.finances -= 200  # Example cost for purchasing more raw materials
 
     def render(self):
-        # Clear the screen and overwrite the previous output
-        sys.stdout.write("\033[F")  # Move cursor up to overwrite the previous line
+        # Clear the line and overwrite the previous output
+        sys.stdout.write("\r")  # Carriage return to go to the start of the line
+        sys.stdout.flush()
 
-        print("Factory Status:")
-        print(f"Inventory: {self.inventory} units")
-        print(f"Resources: {self.resources} units")
-        print(f"Finances: ${self.finances}")
-        print(f"Production Rate: {self.production_rate} units per day")
-        print(f"Production Goal: {self.production_goals} units")
-        print(f"Time of Day: {self.time_of_day}/24 hours")
-        print(f"Machines: {len(self.machines)}")
-        print(f"Workers: {len(self.workers)}")
+        # Print the updated factory status on the same line
+        print(f"Factory Status: Inventory: {self.inventory} units | "
+              f"Resources: {self.resources} units | Finances: ${self.finances} | "
+              f"Production Rate: {self.production_rate} units/day | "
+              f"Production Goal: {self.production_goals} units | "
+              f"Time of Day: {self.time_of_day}/24 hours | "
+              f"Machines: {len(self.machines)} | Workers: {len(self.workers)}", end="")
 
     def run(self):
         last_time = time.time()
