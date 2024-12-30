@@ -1,7 +1,6 @@
 import time
 import random
-import sys
-import os
+from consoledraw import Console
 
 class ProductionManager:
     def __init__(self):
@@ -69,26 +68,26 @@ class ProductionManager:
             print("Out of resources! Need to purchase more.")
             self.finances -= 200  # Example cost for purchasing more raw materials
 
-    def clear_screen(self):
-        # Clear the console screen for Windows and Unix-based systems
-        if sys.platform == 'win32':
-            os.system('cls')  # Windows
-        else:
-            os.system('clear')  # Linux / macOS
-
-    def render(self):
-        # Clear the console screen
-        self.clear_screen()
-
-        # Print the updated factory status
-        print(f"Factory Status: Inventory: {self.inventory} units | "
-              f"Resources: {self.resources} units | Finances: ${self.finances} | "
-              f"Production Rate: {self.production_rate} units/day | "
-              f"Production Goal: {self.production_goals} units | "
-              f"Time of Day: {self.time_of_day}/24 hours | "
-              f"Machines: {len(self.machines)} | Workers: {len(self.workers)}", end="")
+    def render(self, console):
+        # Clear the console screen and update the game state
+        output = f"""
+        Factory Status:
+        Inventory: {self.inventory} units
+        Resources: {self.resources} units
+        Finances: ${self.finances}
+        Production Rate: {self.production_rate} units/day
+        Production Goal: {self.production_goals} units
+        Time of Day: {self.time_of_day}/24 hours
+        Machines: {len(self.machines)}
+        Workers: {len(self.workers)}
+        """
+        console.clear()  # Clear the screen
+        console.print(output)  # Print the updated game state
 
     def run(self):
+        # Initialize the console for drawing
+        console = Console()
+
         last_time = time.time()
         target_fps = 2  # Slower FPS to make it more readable in this simulation
         frame_duration = 1.0 / target_fps
@@ -102,7 +101,7 @@ class ProductionManager:
                 self.update_game_state(delta_time)  # Update production and resources
                 self.handle_ai()  # Simulate machine breakdowns and AI events
                 self.update_world()  # Update machine and worker efficiency
-                self.render()  # Display the current state of the factory
+                self.render(console)  # Display the current state of the factory
 
                 last_time = current_time
             else:
