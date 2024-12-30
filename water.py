@@ -1,11 +1,10 @@
-import time
 import os
 
-def water_glass_fill(total_steps, max_height=5):
-    for step in range(total_steps + 1):
-        # Calculate the water level, the number of rows of water in the glass
-        water_level = int((step / total_steps) * max_height)
-        
+def interactive_water_glass(max_height=5):
+    # Initial water level
+    water_level = 0
+
+    while True:
         # Start creating the glass
         glass = " -----\n"
         for i in range(max_height):
@@ -15,18 +14,33 @@ def water_glass_fill(total_steps, max_height=5):
                 glass += "|#####|\n"  # Water fills the bottom rows
         glass += " -----"
         
-        # Add a line below the glass to display the current level
-        text = f"Water level: {water_level}/{max_height}"
-
         # Clear the previous output
         os.system('cls' if os.name == 'nt' else 'clear')
         
-        # Print the updated glass and the current water level
+        # Print the glass and water level
         print(glass)
-        print(text)
+        print(f"Water level: {water_level}/{max_height}")
+        print("\nCommands: [fill] Add water, [drain] Remove water, [exit] Quit")
 
-        # Simulate a delay to show the filling effect
-        time.sleep(0.2)
+        # Get user input
+        command = input("Enter a command: ").strip().lower()
 
-# Example usage: Fill the glass in 20 steps
-water_glass_fill(20)
+        # Process commands
+        if command == "fill":
+            if water_level < max_height:
+                water_level += 1
+            else:
+                print("The glass is already full!")
+        elif command == "drain":
+            if water_level > 0:
+                water_level -= 1
+            else:
+                print("The glass is already empty!")
+        elif command == "exit":
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid command! Please use [fill], [drain], or [exit].")
+
+# Start the interactive game
+interactive_water_glass()
