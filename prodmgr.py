@@ -85,8 +85,11 @@ class ProductionManager:
         Workers: {len(self.workers)}
         """
 
-        # Append additional outputs such as events, warnings
-        self.output = status_output + self.output
+        # Append additional outputs such as events, warnings, only if there are events
+        if self.output:
+            self.output = status_output + self.output
+        else:
+            self.output = status_output
         
         # Print the output once all events are processed
         print(self.output)
@@ -103,9 +106,13 @@ class ProductionManager:
             current_time = time.time()
             delta_time = current_time - last_time
 
+            # Ensure non-negative sleep duration
+            sleep_duration = frame_duration - delta_time
+            if sleep_duration > 0:
+                time.sleep(sleep_duration)
+
             # Occasionally skip an action for randomness
             if random.random() < 0.2:  # 20% chance to skip an action
-                time.sleep(frame_duration - delta_time)
                 continue  # Skip the rest of the loop and wait for the next frame
 
             if delta_time >= frame_duration:
@@ -116,8 +123,6 @@ class ProductionManager:
                 self.render()  # Display the current state of the factory
 
                 last_time = current_time
-            else:
-                time.sleep(frame_duration - delta_time)
 
 # Run the Production Manager game loop
 game = ProductionManager()
