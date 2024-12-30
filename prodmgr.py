@@ -16,6 +16,7 @@ class ProductionManager:
         self.workers = []       # List of workers in the factory
         self.time_of_day = 0    # Time progress, e.g., hours in a workday
         self.production_goals = 100  # Example production goal
+        self.output = ""        # Output string to store all print statements
 
     def process_input(self):
         # Simulate random user decisions like adding machines, changing goals, or assigning workers
@@ -24,16 +25,16 @@ class ProductionManager:
         
         if event == "Add machine":
             self.machines.append("Machine")
-            print(f"\nEvent: Added a new machine!")
+            self.output += f"\nEvent: Added a new machine!"
         elif event == "Hire worker":
             self.workers.append("Worker")
-            print(f"\nEvent: Hired a new worker!")
+            self.output += f"\nEvent: Hired a new worker!"
         elif event == "Increase production goal":
             self.production_goals += 10
-            print(f"\nEvent: Increased production goal to {self.production_goals}")
+            self.output += f"\nEvent: Increased production goal to {self.production_goals}"
         elif event == "Purchase raw materials":
             self.resources += 500
-            print(f"\nEvent: Purchased raw materials!")
+            self.output += f"\nEvent: Purchased raw materials!"
 
     def update_game_state(self, delta_time):
         # Update the production process, worker productivity, and machine status
@@ -48,19 +49,18 @@ class ProductionManager:
 
     def handle_ai(self):
         # Handle AI for machines breaking down, workers' productivity, and external factors
-        print(f"\nHandling AI... (e.g., machine breakdowns or supply chain issues)")
+        self.output += f"\nHandling AI... (e.g., machine breakdowns or supply chain issues)"
         
         # Random example of a machine breakdown or worker productivity drop
         if len(self.machines) > 0 and random.random() < 0.1:  # 10% chance for breakdown
-            print("Warning: A machine broke down!")
+            self.output += "\nWarning: A machine broke down!"
             self.machines = self.machines[:-1]  # Simulate a machine breakdown
         if len(self.workers) > 0 and random.random() < 0.05:  # 5% chance for worker fatigue
-            print("Warning: A worker is fatigued and needs rest!")
+            self.output += "\nWarning: A worker is fatigued and needs rest!"
             self.workers = self.workers[:-1]  # Simulate a worker leaving temporarily
 
     def update_world(self):
         # Update world variables like workers' productivity and machine efficiency
-        #print("Updating world... (e.g., worker assignments, inventory check)")
 
         # Simulate worker and machine efficiency
         if self.machines:
@@ -69,15 +69,15 @@ class ProductionManager:
             self.production_rate = 0  # No machines, no production
 
         if self.resources <= 0:
-            #print("Out of resources! Need to purchase more.")
+            self.output += "\nOut of resources! Need to purchase more."
             self.finances -= 200  # Example cost for purchasing more raw materials
 
     def render(self):
         # Clear the console screen and update the game state
         clear_console()
-        
-        # Formatt output
-        output = f"""
+
+        # Start with the factory status information
+        status_output = f"""
         Factory Status:
         Inventory: {self.inventory} units
         Resources: {self.resources} units
@@ -88,18 +88,17 @@ class ProductionManager:
         Machines: {len(self.machines)}
         Workers: {len(self.workers)}
         """
+
+        # Append additional outputs such as events, warnings, or AI handling
+        self.output = status_output + self.output
         
-        if self.resources <= 0:
-            print("Out of resources! Need to purchase more.")
+        # Print the output once all events are processed
+        print(self.output)
         
-        # Use console.update() instead of console.clear() to avoid the flashing
-        #console.update()  # Apply the changes without flashing
-        #console.print(output)  # Print the updated game state
-        print(output)
+        # Reset the output for the next frame
+        self.output = ""
 
     def run(self):
-
-
         last_time = time.time()
         target_fps = 0.5  # Slower FPS to make it more readable in this simulation
         frame_duration = 1.0 / target_fps
