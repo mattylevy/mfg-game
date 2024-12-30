@@ -1,73 +1,72 @@
-import asyncio
+from consoledraw import Console
+import time
+import threading
 
-class GameEngine:
+class WaterGame:
     def __init__(self):
+        self.console = Console()
         self.running = True
         self.command = None
         self.water_level = 0
-        self.max_level = 100
+        self.max_level = 10
+        self.action = None  # Current action (fill or drain)
 
-    async def get_command(self):
-        """Continuously fetch user input asynchronously."""
+    def render_glass(self):
+        """Render the water glass with the current water level."""
+        self.console.clear()
+        self.console.print("Water Glass Game", align="center", bold=True)
+        self.console.print("+" + "-" * 7 + "+")
+        for i in range(self.max_level, 0, -1):
+            if self.water_level >= i:
+                self.console.print("|███████|")
+            else:
+                self.console.print("|       |")
+        self.console.print("+" + "-" * 7 + "+")
+        self.console.print(f"Water Level: {self.water_level * 10}%", align="center")
+        self.console.print("Commands: fill, drain, stop, exit", align="center")
+
+    def handle_input(self):
+        """Continuously handle user input."""
         while self.running:
-            self.command = await asyncio.to_thread(input, "Command (fill, drain, stop, exit): ").strip()
+            self.command = input("Command (fill, drain, stop, exit): ").strip().lower()
 
-    async def fill(self):
-        """Incrementally fill the water tank."""
-        while self.water_level < self.max_level:
-            if self.command == "stop":
-                print("Stopped filling!")
-                break
-            self.water_level += 10
-            await asyncio.sleep(0.5)
+    def fill(self):
+        """Fill the water glass."""
+        self.action = "fill"
+        while self.water_level < self.max_level and self.action == "fill":
+            self.water_level += 1
+            self.render_glass()
+            time.sleep(0.5)
 
-    async def drain(self):
-        """Incrementally drain the water tank."""
-        while self.water_level > 0:
-            if self.command == "stop":
-                print("Stopped draining!")
-                break
-            self.water_level -= 10
-            await asyncio.sleep(0.5)
+    def drain(self):
+        """Drain the water glass."""
+        self.action = "drain"
+        while self.water_level > 0 and self.action == "drain":
+            self.water_level -= 1
+            self.render_glass()
+            time.sleep(0.5)
 
-    async def render(self):
-        """Continuously render the water level."""
+    def run(self):
+        """Run the game."""
+        input_thread = threading.Thread(target=self.handle_input, daemon=True)
+        input_thread.start()
+
         while self.running:
-            # Clear the screen and redraw the water glass
-            print("\033c", end="")  # ANSI escape sequence to clear the terminal
-            print("Water Glass")
-            for i in range(self.max_level, -1, -10):
-                if self.water_level >= i:
-                    print("|███████|")  # Filled line
-                else:
-                    print("|       |")  # Empty line
-            print("Water Level:", self.water_level, "%")
-            await asyncio.sleep(0.1)
-
-    async def game_loop(self):
-        """Handle game commands and logic."""
-        while self.running:
-            if self.command == "fill":
-                await self.fill()
+            if self.command == "fill" and self.action != "fill":
+                self.fill()
                 self.command = None
-            elif self.command == "drain":
-                await self.drain()
+            elif self.command == "drain" and self.action != "drain":
+                self.drain()
+                self.command = None
+            elif self.command == "stop":
+                self.action = None
                 self.command = None
             elif self.command == "exit":
                 self.running = False
-                print("Exiting game...")
-            else:
-                await asyncio.sleep(0.1)
+            self.render_glass()
+            time.sleep(0.1)
 
-    async def run(self):
-        """Run the game engine."""
-        await asyncio.gather(
-            self.get_command(),  # Handle user input
-            self.render(),       # Continuously render the game state
-            self.game_loop()     # Update game logic based on commands
-        )
-
-# Start the game engine
+# Run the game
 if __name__ == "__main__":
-    engine = GameEngine()
-    asyncio.run(engine.run())
+    game = WaterGame()
+    game.run()
