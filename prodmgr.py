@@ -81,7 +81,8 @@ class ProductionManager:
         Machines: {len(self.machines)}
         Workers: {len(self.workers)}
         """
-        console.clear()  # Clear the screen
+        # Use console.update() instead of console.clear() to avoid the flashing
+        console.update()  # Apply the changes without flashing
         console.print(output)  # Print the updated game state
 
     def run(self):
