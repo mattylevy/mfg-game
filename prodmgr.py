@@ -1,6 +1,10 @@
 import time
 import random
-from consoledraw import Console
+import os
+
+def clear_console():
+    """Clears the console for updated display."""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 class ProductionManager:
     def __init__(self):
@@ -56,7 +60,7 @@ class ProductionManager:
 
     def update_world(self):
         # Update world variables like workers' productivity and machine efficiency
-        print("Updating world... (e.g., worker assignments, inventory check)")
+        #print("Updating world... (e.g., worker assignments, inventory check)")
 
         # Simulate worker and machine efficiency
         if self.machines:
@@ -65,11 +69,14 @@ class ProductionManager:
             self.production_rate = 0  # No machines, no production
 
         if self.resources <= 0:
-            print("Out of resources! Need to purchase more.")
+            #print("Out of resources! Need to purchase more.")
             self.finances -= 200  # Example cost for purchasing more raw materials
 
-    def render(self, console):
+    def render(self):
         # Clear the console screen and update the game state
+        clear_console()
+        
+        # Formatt output
         output = f"""
         Factory Status:
         Inventory: {self.inventory} units
@@ -81,16 +88,20 @@ class ProductionManager:
         Machines: {len(self.machines)}
         Workers: {len(self.workers)}
         """
+        
+        if self.resources <= 0:
+            print("Out of resources! Need to purchase more.")
+        
         # Use console.update() instead of console.clear() to avoid the flashing
-        console.update()  # Apply the changes without flashing
-        console.print(output)  # Print the updated game state
+        #console.update()  # Apply the changes without flashing
+        #console.print(output)  # Print the updated game state
+        print(output)
 
     def run(self):
-        # Initialize the console for drawing
-        console = Console()
+
 
         last_time = time.time()
-        target_fps = 2  # Slower FPS to make it more readable in this simulation
+        target_fps = 0.5  # Slower FPS to make it more readable in this simulation
         frame_duration = 1.0 / target_fps
 
         while True:
@@ -102,7 +113,7 @@ class ProductionManager:
                 self.update_game_state(delta_time)  # Update production and resources
                 self.handle_ai()  # Simulate machine breakdowns and AI events
                 self.update_world()  # Update machine and worker efficiency
-                self.render(console)  # Display the current state of the factory
+                self.render()  # Display the current state of the factory
 
                 last_time = current_time
             else:

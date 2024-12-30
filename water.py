@@ -15,6 +15,7 @@ def display_glass(water_level, max_height):
         else:
             glass += "|#####|\n"  # Water-filled rows
     glass += " -----"
+    glass += " \n "
     print(glass)
     print(f"Water level: {water_percentage}%")
 
