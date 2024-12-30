@@ -1,5 +1,5 @@
 import time
-import sys
+import os
 
 def water_glass_fill(total_steps, max_height=5):
     for step in range(total_steps + 1):
@@ -13,17 +13,16 @@ def water_glass_fill(total_steps, max_height=5):
                 glass += "|     |\n"  # Empty space in the glass
             else:
                 glass += "|#####|\n"  # Water fills the bottom rows
+        glass += " -----"
 
-        glass += " -----\n"
-
-        # Print the glass with the updated water level
-        sys.stdout.write(f'\r{glass}')
-        sys.stdout.flush()
+        # Clear the previous output
+        os.system('cls' if os.name == 'nt' else 'clear')
         
+        # Print the updated glass
+        print(glass)
+
         # Simulate a delay to show the filling effect
         time.sleep(0.2)
-    
-    print()  # Move to the next line after the filling is complete
 
 # Example usage: Fill the glass in 20 steps
 water_glass_fill(20)
