@@ -1,72 +1,58 @@
-from consoledraw import Console
+import os
 import time
-import threading
 
-class WaterGame:
-    def __init__(self):
-        self.console = Console()
-        self.running = True
-        self.command = None
-        self.water_level = 0
-        self.max_level = 10
-        self.action = None  # Current action (fill or drain)
+def clear_console():
+    """Clears the console for updated display."""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-    def render_glass(self):
-        """Render the water glass with the current water level."""
-        self.console.clear()
-        self.console.print("Water Glass Game", align="center", bold=True)
-        self.console.print("+" + "-" * 7 + "+")
-        for i in range(self.max_level, 0, -1):
-            if self.water_level >= i:
-                self.console.print("|███████|")
-            else:
-                self.console.print("|       |")
-        self.console.print("+" + "-" * 7 + "+")
-        self.console.print(f"Water Level: {self.water_level * 10}%", align="center")
-        self.console.print("Commands: fill, drain, stop, exit", align="center")
+def display_glass(water_level, max_height):
+    """Displays the glass with the current water level and percentage."""
+    water_percentage = int((water_level / max_height) * 100)
+    glass = " -----\n"
+    for i in range(max_height):
+        if i < max_height - water_level:
+            glass += "|     |\n"  # Empty space in the glass
+        else:
+            glass += "|#####|\n"  # Water-filled rows
+    glass += " -----"
+    print(glass)
+    print(f"Water level: {water_percentage}%")
 
-    def handle_input(self):
-        """Continuously handle user input."""
-        while self.running:
-            self.command = input("Command (fill, drain, stop, exit): ").strip().lower()
+def interactive_water_glass(max_height=5):
+    """Interactive water glass game with filling and draining animations."""
+    water_level = 0
 
-    def fill(self):
-        """Fill the water glass."""
-        self.action = "fill"
-        while self.water_level < self.max_level and self.action == "fill":
-            self.water_level += 1
-            self.render_glass()
-            time.sleep(0.5)
+    while True:
+        # Display the glass and available commands
+        clear_console()
+        display_glass(water_level, max_height)
+        print("\nCommands: [fill] Add water, [drain] Remove water, [exit] Quit")
+        
+        # Get user input
+        command = input("Enter a command: ").strip().lower()
 
-    def drain(self):
-        """Drain the water glass."""
-        self.action = "drain"
-        while self.water_level > 0 and self.action == "drain":
-            self.water_level -= 1
-            self.render_glass()
-            time.sleep(0.5)
+        if command == "fill":
+            # Incrementally fill the glass
+            while water_level < max_height:
+                water_level += 1
+                clear_console()
+                display_glass(water_level, max_height)
+                time.sleep(0.3)  # Simulate filling animation
+            print("The glass is now full!")
+        elif command == "drain":
+            # Incrementally drain the glass
+            while water_level > 0:
+                water_level -= 1
+                clear_console()
+                display_glass(water_level, max_height)
+                time.sleep(0.3)  # Simulate draining animation
+            print("The glass is now empty!")
+        elif command == "exit":
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid command! Please use [fill], [drain], or [exit].")
+            time.sleep(1)
 
-    def run(self):
-        """Run the game."""
-        input_thread = threading.Thread(target=self.handle_input, daemon=True)
-        input_thread.start()
-
-        while self.running:
-            if self.command == "fill" and self.action != "fill":
-                self.fill()
-                self.command = None
-            elif self.command == "drain" and self.action != "drain":
-                self.drain()
-                self.command = None
-            elif self.command == "stop":
-                self.action = None
-                self.command = None
-            elif self.command == "exit":
-                self.running = False
-            self.render_glass()
-            time.sleep(0.1)
-
-# Run the game
-if __name__ == "__main__":
-    game = WaterGame()
-    game.run()
+# Start the interactive game
+interactive_water_glass()
