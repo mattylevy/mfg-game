@@ -5,6 +5,9 @@ def interactive_water_glass(max_height=5):
     water_level = 0
 
     while True:
+        # Calculate the water level percentage
+        water_percentage = int((water_level / max_height) * 100)
+
         # Start creating the glass
         glass = " -----\n"
         for i in range(max_height):
@@ -19,7 +22,7 @@ def interactive_water_glass(max_height=5):
         
         # Print the glass and water level
         print(glass)
-        print(f"Water level: {water_level}/{max_height}")
+        print(f"Water level: {water_percentage}%")
         print("\nCommands: [fill] Add water, [drain] Remove water, [exit] Quit")
 
         # Get user input
