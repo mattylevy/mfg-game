@@ -1,6 +1,7 @@
 import time
 import random
 import sys
+import os
 
 class ProductionManager:
     def __init__(self):
@@ -68,12 +69,18 @@ class ProductionManager:
             print("Out of resources! Need to purchase more.")
             self.finances -= 200  # Example cost for purchasing more raw materials
 
-    def render(self):
-        # Clear the line and overwrite the previous output
-        sys.stdout.write("\r")  # Carriage return to go to the start of the line
-        sys.stdout.flush()
+    def clear_screen(self):
+        # Clear the console screen for Windows and Unix-based systems
+        if sys.platform == 'win32':
+            os.system('cls')  # Windows
+        else:
+            os.system('clear')  # Linux / macOS
 
-        # Print the updated factory status on the same line
+    def render(self):
+        # Clear the console screen
+        self.clear_screen()
+
+        # Print the updated factory status
         print(f"Factory Status: Inventory: {self.inventory} units | "
               f"Resources: {self.resources} units | Finances: ${self.finances} | "
               f"Production Rate: {self.production_rate} units/day | "
