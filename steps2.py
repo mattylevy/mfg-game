@@ -126,7 +126,6 @@ class ProductionEngine:
         """Main production(game) loop."""
         while self.running and self.frame < total_frames:
             
-    
             
             # Core production loop functions --- following game loop framework 
             self.processInput()
