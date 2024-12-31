@@ -33,10 +33,11 @@ class Step:
         self.state = StepState.COMPLETE
 
     def update(self, current_time):
-        if self.state == StepState.RUNNING or  self.state == StepState.IDLE:
-            self.elapsed_time = (current_time - self.start_time).total_seconds()
-            if self.elapsed_time > self.standard_duration:
-                self.state = StepState.IDLE
+        # Update elapsed_time regardless of state
+        self.elapsed_time = (current_time - self.start_time).total_seconds()
+        
+        if self.state == StepState.RUNNING and self.elapsed_time > self.standard_duration:
+            self.state = StepState.IDLE
 
     def render(self):
         return (
@@ -44,7 +45,6 @@ class Step:
             f"Start = {self.start_time}, End = {self.end_time}, "
             f"Elapsed Time = {self.elapsed_time:.2f} seconds"
         )
-
 
 # StepSequence Manager
 class StepSequence:
