@@ -50,10 +50,10 @@ class Step:
             if self.last_update_time:
                 self.active_time += (current_time - self.last_update_time).total_seconds()
 
-        # Handle transition to IDLE state
-        if self.state == StepState.RUNNING and self.elapsed_time > self.standard_duration:
-            self.state = StepState.IDLE
-            self.last_idle_time_update = current_time  # Track the time when the step enters IDLE
+            # Check if active_time exceeds standard_duration to transition to IDLE
+            if self.active_time > self.standard_duration:
+                self.state = StepState.IDLE
+                self.last_idle_time_update = current_time  # Track the time when the step enters IDLE
 
         # Accumulate idle_time if in IDLE state
         if self.state == StepState.IDLE and self.last_idle_time_update:
