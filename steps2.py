@@ -33,9 +33,10 @@ class Step:
         self.state = StepState.COMPLETE
 
     def update(self, current_time):
-        # Update elapsed_time regardless of state
-        self.elapsed_time = (current_time - self.start_time).total_seconds()
-        
+        # Only update elapsed_time when the step is RUNNING or IDLE
+        if self.state == StepState.RUNNING or self.state == StepState.IDLE:
+            self.elapsed_time = (current_time - self.start_time).total_seconds()
+
         if self.state == StepState.RUNNING and self.elapsed_time > self.standard_duration:
             self.state = StepState.IDLE
 
