@@ -98,12 +98,14 @@ class ProductionEngine:
         Simulates receiving a message from the DCS.
         Returns a tuple: (step_name, datetime).
         """
+        print(self.r.llen(self.event_queue))
         # for each new event
         while self.r.llen(self.event_queue) > 0:
+ 
             step_name = self.r.rpop(self.event_queue)
             message = (step_name, datetime.now())
             self.messages.append(message) # appends message to list of recieved messages in the ProudctionEngine object
-            
+            print(message)
             
     def update(self):
         """Update the state of the step sequence."""
@@ -141,7 +143,7 @@ class ProductionEngine:
 
 # Case Study Setup
 # Define the 10 steps with standard durations (in seconds)
-steps = [Step(f"Step {i+1}", standard_duration=10) for i in range(10)]
+steps = [Step(f"step {i+1}", standard_duration=10) for i in range(10)]
 step_sequence = StepSequence(steps)
 
 # Start the production loop

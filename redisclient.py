@@ -8,4 +8,4 @@ while True:
      # Get user input
     command = input("Enter a command: ").strip().lower()
     
-    r.lpush('command_queue',command)
+    r.lpush('event_queue',command)
