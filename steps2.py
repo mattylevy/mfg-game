@@ -21,30 +21,41 @@ class Step:
         self.start_time = None
         self.end_time = None
         self.elapsed_time = 0
+        self.idle_time = 0  # New attribute to accumulate idle time
         self.state = StepState.PENDING
+        self.last_idle_time_update = None  # To track when the step entered IDLE state
 
     def start(self, start_time):
         self.start_time = start_time
         self.state = StepState.RUNNING
+        self.last_idle_time_update = None  # Reset idle time tracking when step starts
 
     def complete(self, end_time):
         self.end_time = end_time
         self.elapsed_time = (self.end_time - self.start_time).total_seconds()
         self.state = StepState.COMPLETE
+        self.last_idle_time_update = None  # Reset idle time tracking when step completes
 
     def update(self, current_time):
-        # Only update elapsed_time when the step is RUNNING or IDLE
+        # Update elapsed_time when running or idle
         if self.state == StepState.RUNNING or self.state == StepState.IDLE:
             self.elapsed_time = (current_time - self.start_time).total_seconds()
 
         if self.state == StepState.RUNNING and self.elapsed_time > self.standard_duration:
             self.state = StepState.IDLE
+            self.last_idle_time_update = current_time  # Track the time when the step enters IDLE
+
+        if self.state == StepState.IDLE:
+            # Accumulate idle time only when the step is in IDLE state
+            self.idle_time += (current_time - self.last_idle_time_update).total_seconds()
+            self.last_idle_time_update = current_time  # Update the last idle time
 
     def render(self):
         return (
             f"Step {self.name}: State = {self.state}, "
             f"Start = {self.start_time}, End = {self.end_time}, "
-            f"Elapsed Time = {self.elapsed_time:.2f} seconds"
+            f"Elapsed Time = {self.elapsed_time:.2f} seconds, "
+            f"Idle Time = {self.idle_time:.2f} seconds"
         )
 
 # StepSequence Manager
