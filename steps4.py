@@ -126,23 +126,23 @@ class StepSequence:
         self.current_step_index = 0
 
     def start_next_step(self, step_name, start_time):
-    if self.current_step_index < len(self.steps):
-        current_step = self.steps[self.current_step_index]
-
-        # Ensure the correct step is starting
-        if current_step.name == step_name:
-            if isinstance(current_step.state, RunningState):
-                raise ValueError("Step is already running.")
-
-            # Mark previous step as complete, regardless of its current state
-            if self.current_step_index > 0:
-                previous_step = self.steps[self.current_step_index - 1]
-                if not isinstance(previous_step.state, CompleteState):
-                    previous_step.handle_event("complete")
-
-            # Start the current step
-            current_step.handle_event("start")
-            self.current_step_index += 1
+        if self.current_step_index < len(self.steps):
+            current_step = self.steps[self.current_step_index]
+    
+            # Ensure the correct step is starting
+            if current_step.name == step_name:
+                if isinstance(current_step.state, RunningState):
+                    raise ValueError("Step is already running.")
+    
+                # Mark previous step as complete, regardless of its current state
+                if self.current_step_index > 0:
+                    previous_step = self.steps[self.current_step_index - 1]
+                    if not isinstance(previous_step.state, CompleteState):
+                        previous_step.handle_event("complete")
+    
+                # Start the current step
+                current_step.handle_event("start")
+                self.current_step_index += 1
             
     def update(self, current_time):
         if self.current_step_index > 0:

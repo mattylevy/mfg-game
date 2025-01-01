@@ -2,6 +2,7 @@ import time
 from datetime import datetime, timedelta
 import redis
 
+import os
 
 
 
@@ -51,6 +52,8 @@ class Step:
             self.last_idle_time_update = current_time  # Update the last idle time
 
     def render(self):
+        """ Render output method """
+        
         return (
             f"Step {self.name}: State = {self.state}, "
             f"Start = {self.start_time}, End = {self.end_time}, "
@@ -86,6 +89,11 @@ class StepSequence:
             self.steps[self.current_step_index - 1].update(current_time)
 
     def render(self):
+        def clear_console():
+            """Clears the console for updated display."""
+            os.system('cls' if os.name == 'nt' else 'clear')
+            
+        clear_console()
         for step in self.steps:
             print(step.render())
 
