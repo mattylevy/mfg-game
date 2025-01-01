@@ -41,7 +41,8 @@ class RunningState(StepState):
             step.end_time = datetime.now()
             step.elapsed_time = (step.end_time - step.start_time).total_seconds()
             step.state = CompleteState()
-            print(f"Step {step.name} completed.")
+            print(f"Step {step.name} completed. Finalized attributes:")
+            print(step.render())
 
     def update(self, step, current_time):
         step.active_time += (current_time - step.last_update_time).total_seconds()
@@ -88,7 +89,9 @@ class CompleteState(StepState):
     def render(self, step):
         return (
             f"Step {step.name}: State = COMPLETE, "
-            f"Elapsed Time = {step.elapsed_time:.2f} seconds"
+            f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
+            f"Idle Time = {step.idle_time:.2f} seconds, "
+            f"Active Time = {step.active_time:.2f} seconds"
         )
 
 
@@ -131,9 +134,10 @@ class StepSequence:
                 if isinstance(current_step.state, RunningState):
                     raise ValueError("Step is already running.")
 
-                # Mark previous step as complete
+                # Mark previous step as complete, regardless of its current state
                 if self.current_step_index > 0:
-                    self.steps[self.current_step_index - 1].handle_event("complete")
+                    previous_step = self.steps[self.current_step_index - 1]
+                    previous_step.handle_event("complete")
 
                 # Start the current step
                 current_step.handle_event("start")
