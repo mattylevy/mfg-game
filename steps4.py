@@ -67,6 +67,11 @@ class IdleState(StepState):
             step.state = RunningState()
             step.last_update_time = datetime.now()
             print(f"Step {step.name} resumed.")
+        elif event == "complete":
+            step.end_time = datetime.now()
+            step.elapsed_time = (step.end_time - step.start_time).total_seconds()
+            step.state = CompleteState()
+            print(f"Step {step.name} completed from IDLE state.")
 
     def update(self, step, current_time):
         step.idle_time += (current_time - step.last_idle_time_update).total_seconds()
@@ -77,6 +82,7 @@ class IdleState(StepState):
             f"Step {step.name}: State = IDLE, "
             f"Idle Time = {step.idle_time:.2f} seconds"
         )
+        
 
 
 class CompleteState(StepState):
