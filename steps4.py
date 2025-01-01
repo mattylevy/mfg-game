@@ -49,11 +49,12 @@ class RunningState(StepState):
         step.last_update_time = current_time
 
         # Transition to IDLE if active_time exceeds standard_duration
-        if step.active_time > step.standard_duration:
+        # and step is not a processing step
+        if step.active_time > step.standard_duration and step.is_processing_step == 0:
             step.state = IdleState()
             step.last_idle_time_update = current_time
             print(f"Step {step.name} is now IDLE.")
-
+            
     def render(self, step):
         return (
             f"Step {step.name}: State = RUNNING, "
