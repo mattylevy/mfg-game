@@ -107,9 +107,10 @@ class CompleteState(StepState):
 
 # Step Class
 class Step:
-    def __init__(self, name, standard_duration):
+    def __init__(self, name, standard_duration, is_processing_step=0):
         self.name = name
         self.standard_duration = standard_duration
+        self.is_processing_step = is_processing_step  # New attribute
         self.start_time = None
         self.end_time = None
         self.elapsed_time = 0
