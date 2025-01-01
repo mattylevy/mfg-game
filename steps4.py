@@ -55,13 +55,24 @@ class RunningState(StepState):
             step.state = IdleState()
             step.last_idle_time_update = current_time
             print(f"Step {step.name} is now IDLE.")
+        
+        # Mechanism for calculting the step performance if its a processing step
+        
+        if step.is_processing_step == 1:
+            if step.active_time < step.standard_duration:
+                # Assumes performance = 100%
+                step.processing_performance = 1.0 
+            else:
+                # Calculates performance % based on ratio of standard time to active time
+                step.processing_performance =  step.standard_duration / step.active_time
             
     def render(self, step):
         return (
             f"Step {step.name}: State = RUNNING, "
             f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
             f"Idle Time = {step.idle_time:.2f} seconds, "
-            f"Active Time = {step.active_time:.2f} seconds"
+            f"Active Time = {step.active_time:.2f} seconds, "
+            f"Processing performance = {step.processing_performance}"
         )
 
 
@@ -87,7 +98,8 @@ class IdleState(StepState):
             f"Step {step.name}: State = IDLE, "
             f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
             f"Idle Time = {step.idle_time:.2f} seconds, "
-            f"Active Time = {step.active_time:.2f} seconds"
+            f"Active Time = {step.active_time:.2f} seconds, "
+            f"Processing performance = {step.processing_performance}"
         )
         
 
@@ -104,7 +116,8 @@ class CompleteState(StepState):
             f"Step {step.name}: State = COMPLETE, "
             f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
             f"Idle Time = {step.idle_time:.2f} seconds, "
-            f"Active Time = {step.active_time:.2f} seconds"
+            f"Active Time = {step.active_time:.2f} seconds, "
+            f"Processing performance = {step.processing_performance}"
         )
 
 
@@ -114,6 +127,7 @@ class Step:
         self.name = name
         self.standard_duration = standard_duration
         self.is_processing_step = is_processing_step  # New attribute
+        self.processing_performance = 1.0 # default 100%
         self.start_time = None
         self.end_time = None
         self.elapsed_time = 0
@@ -243,6 +257,10 @@ class ProductionEngine:
 # Case Study Setup
 # Define the 10 steps with standard durations (in seconds)
 steps = [Step(f"step {i+1}", standard_duration=10) for i in range(10)]
+
+# simulates 2nd step as a processing step
+steps[1].is_processing_step = 1
+
 step_sequence = StepSequence(steps)
 
 # Start the production loop
