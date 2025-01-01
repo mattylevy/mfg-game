@@ -57,6 +57,8 @@ class RunningState(StepState):
     def render(self, step):
         return (
             f"Step {step.name}: State = RUNNING, "
+            f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
+            f"Idle Time = {step.idle_time:.2f} seconds, "
             f"Active Time = {step.active_time:.2f} seconds"
         )
 
@@ -80,7 +82,9 @@ class IdleState(StepState):
     def render(self, step):
         return (
             f"Step {step.name}: State = IDLE, "
-            f"Idle Time = {step.idle_time:.2f} seconds"
+            f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
+            f"Idle Time = {step.idle_time:.2f} seconds, "
+            f"Active Time = {step.active_time:.2f} seconds"
         )
         
 
@@ -159,6 +163,19 @@ class StepSequence:
             print(step.render())
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Production Loop
 class ProductionEngine:
     """Main production (game) engine"""
@@ -207,6 +224,16 @@ class ProductionEngine:
             self.frame += 1
 
         print("Production loop ended.")
+
+
+
+
+
+
+
+
+
+
 
 
 # Case Study Setup
