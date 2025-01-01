@@ -46,6 +46,7 @@ class RunningState(StepState):
 
     def update(self, step, current_time):
         step.active_time += (current_time - step.last_update_time).total_seconds()
+        step.elapsed_time += (current_time - step.last_update_time).total_seconds()
         step.last_update_time = current_time
 
         # Transition to IDLE if active_time exceeds standard_duration
@@ -78,6 +79,7 @@ class IdleState(StepState):
 
     def update(self, step, current_time):
         step.idle_time += (current_time - step.last_idle_time_update).total_seconds()
+        step.elapsed_time += (current_time - step.last_update_time).total_seconds()
         step.last_idle_time_update = current_time
 
     def render(self, step):
