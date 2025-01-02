@@ -6,6 +6,6 @@ print("\nCommands: [add_asset] Add a new asset, [remove_asset] Removes an asset,
 
 while True:
      # Get user input
-    command = input("Enter a command: ").strip().lower()
+    command = input("Enter a command: ").strip()
     
     r.lpush('event_queue',command)

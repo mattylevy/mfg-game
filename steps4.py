@@ -2,6 +2,9 @@ import time
 from datetime import datetime
 import redis
 from abc import ABC, abstractmethod
+import json
+
+import pandas as pd
 
 
 # Abstract State Base Class
@@ -212,8 +215,12 @@ class ProductionEngine:
     def processInput(self):
         """Simulates receiving a message from the DCS."""
         while self.r.llen(self.event_queue) > 0:
-            step_name = self.r.rpop(self.event_queue)
-            message = (step_name, datetime.now())
+            #step_name = self.r.rpop(self.event_queue)
+            json_str = self.r.rpop('operation_queue')
+            record = json.loads(json_str)
+            step_name = record['step']
+            start_time = datetime.strptime(record['start_time'], '%Y-%m-%d %H:%M:%S')
+            message = (step_name, start_time)
             self.messages.append(message)
 
     def update(self):
@@ -250,19 +257,23 @@ class ProductionEngine:
 
 
 
-
-
+df = pd.read_csv('batch_routing.csv')
 
 
 # Case Study Setup
 # Define the 10 steps with standard durations (in seconds)
-steps = [Step(f"step {i+1}", standard_duration=10) for i in range(10)]
+#steps = [Step(f"step {i+1}", standard_duration=10) for i in range(10)]
 
+steps = []
+for _, row in df.iterrows():
+    steps.append(Step(row['step'], row['duration']))
+
+"""
 # simulates 2nd step as a processing step
 steps[1].is_processing_step = 1
-
+"""
 step_sequence = StepSequence(steps)
 
 # Start the production loop
 production_loop = ProductionEngine(step_sequence)
-production_loop.run(110)
+production_loop.run(1100000000000)
