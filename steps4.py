@@ -214,7 +214,7 @@ class ProductionEngine:
 
     def processInput(self):
         """Simulates receiving a message from the DCS."""
-        while self.r.llen(self.event_queue) > 0:
+        while self.r.llen('operation_queue') > 0:
             #step_name = self.r.rpop(self.event_queue)
             json_str = self.r.rpop('operation_queue')
             record = json.loads(json_str)
