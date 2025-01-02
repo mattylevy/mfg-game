@@ -221,7 +221,7 @@ class ProductionEngine:
         self.step_sequence.update(current_time)
 
         while self.messages:
-            step_name, start_time = self.messages.pop(0)
+            step_name, start_time = self.messages.pop(0) # gets the oldest message
             self.step_sequence.start_next_step(step_name, start_time)
 
     def render(self):
