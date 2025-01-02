@@ -158,32 +158,32 @@ class StepSequence:
 
     def start_next_step(self, step_name, start_time):
     # Find the index of the incoming step in the sequence
-    step_index = next(
-        (i for i, step in enumerate(self.steps) if step.name == step_name), None
-    )
+        step_index = next(
+            (i for i, step in enumerate(self.steps) if step.name == step_name), None
+        )
+        
+        if step_index is None:
+            print(f"Warning: Step {step_name} not found in sequence.")
+            return
     
-    if step_index is None:
-        print(f"Warning: Step {step_name} not found in sequence.")
-        return
-
-    if step_index <= self.current_step_index:
-        print(f"Warning: Ignoring step {step_name} as it is behind or already completed.")
-        return
-
-    # Mark all skipped steps as complete
-    for i in range(self.current_step_index, step_index):
-        skipped_step = self.steps[i]
-        if not isinstance(skipped_step.state, CompleteState):
-            print(f"Skipping step {skipped_step.name}. Marking as complete.")
-            skipped_step.handle_event("complete")
-
-    # Start the incoming step
-    current_step = self.steps[step_index]
-    if isinstance(current_step.state, RunningState):
-        raise ValueError("Step is already running.")
-
-    current_step.handle_event("start")
-    self.current_step_index = step_index + 1
+        if step_index <= self.current_step_index:
+            print(f"Warning: Ignoring step {step_name} as it is behind or already completed.")
+            return
+    
+        # Mark all skipped steps as complete
+        for i in range(self.current_step_index, step_index):
+            skipped_step = self.steps[i]
+            if not isinstance(skipped_step.state, CompleteState):
+                print(f"Skipping step {skipped_step.name}. Marking as complete.")
+                skipped_step.handle_event("complete")
+    
+        # Start the incoming step
+        current_step = self.steps[step_index]
+        if isinstance(current_step.state, RunningState):
+            raise ValueError("Step is already running.")
+    
+        current_step.handle_event("start")
+        self.current_step_index = step_index + 1
     
     def update(self, current_time):
         if self.current_step_index > 0:
