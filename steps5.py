@@ -6,26 +6,19 @@ import json
 import logging
 import pandas as pd
 
-# Configure Logging
-def setup_logger():
-    logger = logging.getLogger("ProductionLogger")
-    logger.setLevel(logging.INFO)
-
-    handler = logging.FileHandler("logfile.log", mode="w")
-    formatter = logging.Formatter("%(name)s %(asctime)s %(levelname)s %(message)s")
-    handler.setFormatter(formatter)
-
-    logger.addHandler(handler)
-    return logger
-
-
-logger = setup_logger()
+# Logger Configuration
+py_logger = logging.getLogger("ProductionLogger")
+py_logger.setLevel(logging.INFO)
+py_handler = logging.FileHandler("logfile.log", mode="w")
+py_formatter = logging.Formatter("%(name)s %(asctime)s %(levelname)s %(message)s")
+py_handler.setFormatter(py_formatter)
+py_logger.addHandler(py_handler)
 
 
 # Abstract State Base Class
 class StepState(ABC):
     @abstractmethod
-    def handle_event(self, step, event):
+    def handle_event(self, step, event, start_time=None):
         pass
 
     @abstractmethod
@@ -39,12 +32,12 @@ class StepState(ABC):
 
 # State Classes
 class PendingState(StepState):
-    def handle_event(self, step, event):
+    def handle_event(self, step, event, start_time=None):
         if event == "start":
-            step.start_time = datetime.now()
-            step.state = RunningState()
+            step.start_time = start_time or datetime.now()
             step.last_update_time = step.start_time
-            logger.info(f"Step {step.name} started.")
+            step.state = RunningState()
+            py_logger.info(f"Step {step.name} started at {step.start_time}.")
 
     def update(self, step, current_time):
         pass  # No updates in PENDING state
@@ -54,24 +47,26 @@ class PendingState(StepState):
 
 
 class RunningState(StepState):
-    def handle_event(self, step, event):
+    def handle_event(self, step, event, start_time=None):
         if event == "complete":
             step.end_time = datetime.now()
             step.elapsed_time = (step.end_time - step.start_time).total_seconds()
             step.state = CompleteState()
-            logger.info(f"Step {step.name} completed. Finalized attributes: {step.render()}")
+            py_logger.info(f"Step {step.name} completed with final stats:")
+            py_logger.info(step.render())
 
     def update(self, step, current_time):
-        step.active_time += (current_time - step.last_update_time).total_seconds()
-        step.elapsed_time += (current_time - step.last_update_time).total_seconds()
+        time_since_last_update = (current_time - step.last_update_time).total_seconds()
+        step.active_time += time_since_last_update
+        step.elapsed_time = (current_time - step.start_time).total_seconds()
         step.last_update_time = current_time
 
         if step.is_processing_step:
-            step.processing_performance = min(1.0, step.standard_duration / step.active_time)
-        elif step.active_time > step.standard_duration:
-            step.state = IdleState()
-            step.last_idle_time_update = current_time
-            logger.info(f"Step {step.name} transitioned to IDLE.")
+            step.processing_performance = (
+                step.standard_duration / step.active_time
+                if step.active_time > step.standard_duration
+                else 1.0
+            )
 
     def render(self, step):
         return (
@@ -83,35 +78,34 @@ class RunningState(StepState):
 
 
 class IdleState(StepState):
-    def handle_event(self, step, event):
+    def handle_event(self, step, event, start_time=None):
         if event == "resume":
             step.state = RunningState()
             step.last_update_time = datetime.now()
-            logger.info(f"Step {step.name} resumed.")
+            py_logger.info(f"Step {step.name} resumed.")
         elif event == "complete":
             step.end_time = datetime.now()
             step.elapsed_time = (step.end_time - step.start_time).total_seconds()
             step.state = CompleteState()
-            logger.info(f"Step {step.name} completed from IDLE state.")
+            py_logger.info(f"Step {step.name} completed from IDLE state.")
 
     def update(self, step, current_time):
-        step.idle_time += (current_time - step.last_idle_time_update).total_seconds()
-        step.elapsed_time += (current_time - step.last_update_time).total_seconds()
-        step.last_idle_time_update = current_time
+        time_since_last_update = (current_time - step.last_update_time).total_seconds()
+        step.idle_time += time_since_last_update
+        step.elapsed_time = (current_time - step.start_time).total_seconds()
+        step.last_update_time = current_time
 
     def render(self, step):
         return (
             f"Step {step.name}: State = IDLE, "
             f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
-            f"Idle Time = {step.idle_time:.2f} seconds, "
-            f"Active Time = {step.active_time:.2f} seconds, "
-            f"Processing Performance = {step.processing_performance:.2f}"
+            f"Idle Time = {step.idle_time:.2f} seconds"
         )
 
 
 class CompleteState(StepState):
-    def handle_event(self, step, event):
-        pass  # No events are processed in COMPLETE state
+    def handle_event(self, step, event, start_time=None):
+        pass  # No events in COMPLETE state
 
     def update(self, step, current_time):
         pass  # No updates in COMPLETE state
@@ -119,10 +113,7 @@ class CompleteState(StepState):
     def render(self, step):
         return (
             f"Step {step.name}: State = COMPLETE, "
-            f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
-            f"Idle Time = {step.idle_time:.2f} seconds, "
-            f"Active Time = {step.active_time:.2f} seconds, "
-            f"Processing Performance = {step.processing_performance:.2f}"
+            f"Elapsed Time = {step.elapsed_time:.2f} seconds"
         )
 
 
@@ -132,7 +123,7 @@ class Step:
         self.name = name
         self.standard_duration = standard_duration
         self.is_processing_step = is_processing_step
-        self.processing_performance = 1.0
+        self.processing_performance = 1.0  # Default 100%
         self.start_time = None
         self.end_time = None
         self.elapsed_time = 0
@@ -140,10 +131,9 @@ class Step:
         self.active_time = 0
         self.state = PendingState()
         self.last_update_time = None
-        self.last_idle_time_update = None
 
-    def handle_event(self, event):
-        self.state.handle_event(self, event)
+    def handle_event(self, event, start_time=None):
+        self.state.handle_event(self, event, start_time)
 
     def update(self, current_time):
         self.state.update(self, current_time)
@@ -162,21 +152,28 @@ class StepSequence:
         step_index = next(
             (i for i, step in enumerate(self.steps) if step.name == step_name), None
         )
-        if step_index is None or step_index <= self.current_step_index:
-            logger.info(f"Invalid step transition to {step_name}.")
+
+        if step_index is None:
+            py_logger.warning(f"Step {step_name} not found in sequence.")
+            return
+
+        if step_index < self.current_step_index:
+            py_logger.warning(f"Step {step_name} is already completed.")
             return
 
         for i in range(self.current_step_index, step_index):
-            if not isinstance(self.steps[i].state, CompleteState):
-                logger.info(f"Skipping step {self.steps[i].name}. Marking as complete.")
-                self.steps[i].handle_event("complete")
+            skipped_step = self.steps[i]
+            if not isinstance(skipped_step.state, CompleteState):
+                py_logger.info(f"Skipping step {skipped_step.name}. Marking as complete.")
+                skipped_step.handle_event("complete")
 
-        self.steps[step_index].handle_event("start")
+        current_step = self.steps[step_index]
+        current_step.handle_event("start", start_time)
         self.current_step_index = step_index
 
     def update(self, current_time):
-        if self.current_step_index > 0:
-            self.steps[self.current_step_index - 1].update(current_time)
+        if self.current_step_index < len(self.steps):
+            self.steps[self.current_step_index].update(current_time)
 
     def render(self):
         for step in self.steps:
@@ -188,9 +185,8 @@ class ProductionEngine:
     def __init__(self, step_sequence):
         self.redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
         self.step_sequence = step_sequence
-        self.frame = 0
-        self.running = True
         self.messages = []
+        self.frame = 0
 
     def process_input(self):
         while self.redis_client.llen("operation_queue") > 0:
@@ -214,21 +210,19 @@ class ProductionEngine:
         print("-" * 30)
 
     def run(self, total_frames):
-        while self.running and self.frame < total_frames:
+        while self.frame < total_frames:
             self.process_input()
             self.update()
             self.render()
             time.sleep(0.8)
             self.frame += 1
 
-        logger.info("Production loop ended.")
 
-
-# Case Study Setup
+# Load Steps
 df = pd.read_csv("batch_routing.csv")
 steps = [Step(row["step"], row["duration"]) for _, row in df.iterrows()]
 step_sequence = StepSequence(steps)
 
-# Start the production loop
-production_engine = ProductionEngine(step_sequence)
-production_engine.run(100)
+# Start Production
+engine = ProductionEngine(step_sequence)
+engine.run(1000)
