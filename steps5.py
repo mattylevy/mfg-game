@@ -199,7 +199,7 @@ class ProductionEngine:
             self.messages.append((step_name, start_time))
 
     def update(self):
-        current_time = datetime.now()
+        current_time = datetime.utcnow()
         self.step_sequence.update(current_time)
 
         while self.messages:
