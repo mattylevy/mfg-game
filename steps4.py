@@ -157,24 +157,34 @@ class StepSequence:
         self.current_step_index = 0 # assumes we are the start of the batch
 
     def start_next_step(self, step_name, start_time):
-        if self.current_step_index < len(self.steps):
-            current_step = self.steps[self.current_step_index]
+    # Find the index of the incoming step in the sequence
+    step_index = next(
+        (i for i, step in enumerate(self.steps) if step.name == step_name), None
+    )
     
-            # Ensure the correct step is starting
-            if current_step.name == step_name:
-                if isinstance(current_step.state, RunningState):
-                    raise ValueError("Step is already running.")
+    if step_index is None:
+        print(f"Warning: Step {step_name} not found in sequence.")
+        return
+
+    if step_index <= self.current_step_index:
+        print(f"Warning: Ignoring step {step_name} as it is behind or already completed.")
+        return
+
+    # Mark all skipped steps as complete
+    for i in range(self.current_step_index, step_index):
+        skipped_step = self.steps[i]
+        if not isinstance(skipped_step.state, CompleteState):
+            print(f"Skipping step {skipped_step.name}. Marking as complete.")
+            skipped_step.handle_event("complete")
+
+    # Start the incoming step
+    current_step = self.steps[step_index]
+    if isinstance(current_step.state, RunningState):
+        raise ValueError("Step is already running.")
+
+    current_step.handle_event("start")
+    self.current_step_index = step_index + 1
     
-                # Mark previous step as complete, regardless of its current state
-                if self.current_step_index > 0:
-                    previous_step = self.steps[self.current_step_index - 1]
-                    if not isinstance(previous_step.state, CompleteState):
-                        previous_step.handle_event("complete")
-    
-                # Start the current step
-                current_step.handle_event("start")
-                self.current_step_index += 1
-            
     def update(self, current_time):
         if self.current_step_index > 0:
             self.steps[self.current_step_index - 1].update(current_time)
