@@ -151,7 +151,7 @@ class Step:
 class StepSequence:
     def __init__(self, steps):
         self.steps = steps
-        self.current_step_index = 0
+        self.current_step_index = 0 # assumes we are the start of the batch
 
     def start_next_step(self, step_name, start_time):
         if self.current_step_index < len(self.steps):
