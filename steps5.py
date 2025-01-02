@@ -168,35 +168,44 @@ class Sequence:
         self.current_step_index = 0
 
     def start_next_step(self, step_name, start_time):
-        step_index = next(
-            (i for i, step in enumerate(self.steps) if step.name == step_name), None
-        )
+    step_index = next(
+        (i for i, step in enumerate(self.steps) if step.name == step_name), None
+    )
 
-        if step_index is None:
-            py_logger.warning(f"Step {step_name} not found in sequence.")
-            return
+    if step_index is None:
+        py_logger.warning(f"Step {step_name} not found in sequence.")
+        return
 
-        if step_index < self.current_step_index:
-            py_logger.warning(f"Step {step_name} is already completed.")
-            return
+    if step_index < self.current_step_index:
+        py_logger.warning(f"Step {step_name} is already completed.")
+        return
 
-        for i in range(self.current_step_index, step_index):
-            skipped_step = self.steps[i]
-            if not isinstance(skipped_step.state, CompleteState):
-                py_logger.info(f"Skipping step {skipped_step.name}. Marking as complete.")
-                skipped_step.handle_event("complete")
+    # Finalize the metrics for the previous step (n-1)
+    if self.current_step_index < len(self.steps):
+        prev_step = self.steps[self.current_step_index]
+        if isinstance(prev_step.state, RunningState) or isinstance(prev_step.state, IdleState):
+            # Use the new step's start_time as the end_time for the previous step
+            prev_step.end_time = start_time
+            prev_step.elapsed_time = (prev_step.end_time - prev_step.start_time).total_seconds()
+            if isinstance(prev_step.state, RunningState):
+                prev_step.active_time += (start_time - prev_step.last_update_time).total_seconds()
+            elif isinstance(prev_step.state, IdleState):
+                prev_step.idle_time += (start_time - prev_step.last_update_time).total_seconds()
+            prev_step.remaining_time = max(0, prev_step.standard_duration - prev_step.active_time)
+            py_logger.info(f"Step {prev_step.name} finalized with metrics: {prev_step.render()}")
+            prev_step.state = CompleteState()
 
-        current_step = self.steps[step_index]
-        current_step.handle_event("start", start_time)
-        self.current_step_index = step_index
+    # Handle skipped steps if any
+    for i in range(self.current_step_index, step_index):
+        skipped_step = self.steps[i]
+        if not isinstance(skipped_step.state, CompleteState):
+            py_logger.info(f"Skipping step {skipped_step.name}. Marking as complete.")
+            skipped_step.handle_event("complete")
 
-    def update(self, current_time):
-        if self.current_step_index < len(self.steps):
-            self.steps[self.current_step_index].update(current_time)
-
-    def render(self):
-        for step in self.steps:
-            print(step.render())
+    # Start the new step
+    current_step = self.steps[step_index]
+    current_step.handle_event("start", start_time)
+    self.current_step_index = step_index
 
 
 # Production Engine
