@@ -176,7 +176,7 @@ class StepSequence:
 
     def update(self, current_time):
         if self.current_step_index > 0:
-            self.steps[self.current_step_index - 1].update(current_time)
+            self.steps[self.current_step_index].update(current_time)
 
     def render(self):
         for step in self.steps:

@@ -32,7 +32,13 @@ work_centre IS A GROUPING OF machines
 
 
 
-production_order RUNS ON A work_centre
+sequence RUNS ON A work_centre
 step RUNS ON A machine 
 
+sequence IS A GROUPING OF steps
 
+step HAS A batch_id attribute
+
+routing IS A GROUPING OF sequences
+
+routing HAS A production_order_number attribute
