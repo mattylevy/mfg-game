@@ -1,0 +1,38 @@
+enterprise
+	site
+		area
+			work_centre
+				machine
+
+
+
+
+
+	series
+		step 
+
+
+enterprise/site/area/work_centre/machine
+
+
+
+msg = {
+	'topic':'',
+
+	'payload':'
+		'timestamp'
+		'parameter'
+		'value'
+	}
+
+enterprise IS A GROUPING OF sites
+sites IS A GROUPING OF areas
+area IS A GROUPING OF work_centres
+work_centre IS A GROUPING OF machines
+
+
+
+production_order RUNS ON A work_centre
+step RUNS ON A machine 
+
+

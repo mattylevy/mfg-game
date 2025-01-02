@@ -136,6 +136,7 @@ ENV/
 env.bak/
 venv.bak/
 batch_routing.csv
+logfile.log
 
 # Spyder project settings
 .spyderproject
