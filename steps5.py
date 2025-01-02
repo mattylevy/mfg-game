@@ -73,6 +73,7 @@ class RunningState(StepState):
             f"Step {step.name}: State = RUNNING, "
             f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
             f"Active Time = {step.active_time:.2f} seconds, "
+            f"Idle Time = {step.idle_time:.2f} seconds"
             f"Processing Performance = {step.processing_performance:.2f}"
         )
 
@@ -143,7 +144,7 @@ class Step:
 
 
 # Step Sequence
-class StepSequence:
+class Sequence:
     def __init__(self, steps):
         self.steps = steps
         self.current_step_index = 0
@@ -182,6 +183,7 @@ class StepSequence:
 
 # Production Engine
 class ProductionEngine:
+    """ Production Engine """
     def __init__(self, step_sequence):
         self.redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
         self.step_sequence = step_sequence
@@ -209,20 +211,27 @@ class ProductionEngine:
         self.step_sequence.render()
         print("-" * 30)
 
-    def run(self, total_frames):
-        while self.frame < total_frames:
-            self.process_input()
-            self.update()
-            self.render()
-            time.sleep(0.8)
-            self.frame += 1
+    def run(self):
+        """Production Loop """
+        # 1. Process input data
+        self.process_input()
+        
+        # 2. Update 
+        self.update()
+        
+        # 3. Render
+        self.render()
+        
+        time.sleep(2)
+        self.frame += 1
 
 
 # Load Steps
 df = pd.read_csv("batch_routing.csv")
 steps = [Step(row["step"], row["duration"]) for _, row in df.iterrows()]
-step_sequence = StepSequence(steps)
+step_sequence = Sequence(steps)
 
 # Start Production
 engine = ProductionEngine(step_sequence)
-engine.run(1000)
+while True:
+    engine.run()
