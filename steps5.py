@@ -60,21 +60,38 @@ class RunningState(StepState):
         step.active_time += time_since_last_update
         step.elapsed_time = (current_time - step.start_time).total_seconds()
         step.last_update_time = current_time
-
-        if step.is_processing_step:
-            step.processing_performance = (
-                step.standard_duration / step.active_time
-                if step.active_time > step.standard_duration
-                else 1.0
-            )
-
+        
+        if step.active_time < step.standard_duration:
+            step.remaining_time = (step.standard_duration - step.active_time) 
+        else:
+            step.remaining_time = 0
+        
+        
+        # Transition to IDLE if active_time exceeds standard_duration
+        # and step is not a processing step
+        if step.active_time > step.standard_duration and step.is_processing_step == 0:
+            step.state = IdleState()
+            step.last_idle_time_update = current_time
+            py_logger.info(f"Step {step.name} is now IDLE.")
+        
+        # Mechanism for calculting the step performance if its a processing step
+        
+        if step.is_processing_step == 1:
+            if step.active_time < step.standard_duration:
+                # Assumes performance = 100%
+                step.processing_performance = 1.0 
+            else:
+                # Calculates performance % based on ratio of standard time to active time
+                step.processing_performance =  step.standard_duration / step.active_time
+            
     def render(self, step):
         return (
             f"Step {step.name}: State = RUNNING, "
             f"Elapsed Time = {step.elapsed_time:.2f} seconds, "
+            f"Idle Time = {step.idle_time:.2f} seconds, "
             f"Active Time = {step.active_time:.2f} seconds, "
-            f"Idle Time = {step.idle_time:.2f} seconds"
-            f"Processing Performance = {step.processing_performance:.2f}"
+            f"Remaining Time = {step.remaining_time:.2f} seconds, "
+            f"Processing performance = {step.processing_performance}"
         )
 
 
@@ -130,6 +147,7 @@ class Step:
         self.elapsed_time = 0
         self.idle_time = 0
         self.active_time = 0
+        self.remaining_time = 0
         self.state = PendingState()
         self.last_update_time = None
 
